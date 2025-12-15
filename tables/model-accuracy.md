@@ -1,6 +1,10 @@
 # Model Accuracy
 
-<table>
+<table width="100%">
+<colgroup>
+    <col width="70%">
+    <col width="30%">
+</colgroup>
   <thead>
     <tr><th>Model Name</th><th>Accuracy</th></tr>
   </thead>

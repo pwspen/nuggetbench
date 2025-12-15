@@ -147,14 +147,25 @@ def _format_targets(targets: Sequence[str]) -> str:
     targets_text = _escape_html_text(", ".join(targets))
     return (
         "<details>"
-        "<summary>Click to see answer</summary>"
-        f"<div>{targets_text}</div>"
+        "<summary>Show answer</summary>"
+        f"<div><strong>Answer:</strong><br>{targets_text}</div>"
         "</details>"
     )
 
 
-def _render_table(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
+def _render_table(
+    headers: Sequence[str],
+    rows: Sequence[Sequence[str]],
+    *,
+    column_widths: Sequence[str] | None = None,
+) -> str:
+    if column_widths and len(column_widths) != len(headers):
+        raise ValueError("Column widths must match headers length.")
     header_cells = "".join(f"<th>{_escape_html_text(str(header))}</th>" for header in headers)
+    colgroup = ""
+    if column_widths:
+        col_tags = "".join(f'    <col width="{_escape_html_attr(width)}">\n' for width in column_widths)
+        colgroup = "<colgroup>\n" + col_tags + "</colgroup>\n"
     body_rows = []
     for row in rows:
         cells = "".join(f"<td>{cell}</td>" for cell in row)
@@ -163,7 +174,8 @@ def _render_table(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
     if body:
         body += "\n"
     return (
-        "<table>\n"
+        f"<table width=\"100%\">\n"
+        f"{colgroup}"
         "  <thead>\n"
         f"    <tr>{header_cells}</tr>\n"
         "  </thead>\n"
@@ -198,7 +210,7 @@ def _build_scoreboard_content(summaries: Sequence[ModelSummary]) -> str:
         for summary in sorted_summaries
     ]
 
-    table = _render_table(("Model Name", "Accuracy"), rows)
+    table = _render_table(("Model Name", "Accuracy"), rows, column_widths=("70%", "30%"))
     return "# Model Accuracy\n\n" + table + "\n"
 
 
@@ -217,7 +229,11 @@ def _build_model_table_content(
         correctness_cell = "✅" if sample.is_correct else "❌"
         rows.append((filename_cell, answer_cell, correctness_cell))
 
-    table = _render_table(("Filename", "Answer", "Correct?"), rows)
+    table = _render_table(
+        ("Filename", "Answer", "Correct?"),
+        rows,
+        column_widths=("35%", "45%", "20%"),
+    )
     return f"# {model_name}\n\n{table}\n"
 
 
@@ -226,11 +242,15 @@ def _build_study_table_content(samples: Sequence[SampleResult], output_dir: Path
     for sample in samples:
         image_src = _escape_html_attr(_relpath(sample.image_path, start=output_dir))
         image_alt = _escape_html_attr(sample.filename)
-        image_markdown = f'<img src="{image_src}" alt="{image_alt}">'
+        image_markdown = f'<img src="{image_src}" alt="{image_alt}" width="256">'
         targets_cell = _format_targets(sample.targets)
         rows.append((image_markdown, targets_cell))
 
-    table = _render_table(("Image", "Targets"), rows)
+    table = _render_table(
+        ("Image", "Targets"),
+        rows,
+        column_widths=("45%", "55%"),
+    )
     return "# Study Guide\n\n" + table + "\n"
 
 

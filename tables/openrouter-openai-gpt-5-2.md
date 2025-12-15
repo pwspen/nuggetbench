@@ -1,6 +1,11 @@
 # openrouter/openai/gpt-5.2
 
-<table>
+<table width="100%">
+<colgroup>
+    <col width="35%">
+    <col width="45%">
+    <col width="20%">
+</colgroup>
   <thead>
     <tr><th>Filename</th><th>Answer</th><th>Correct?</th></tr>
   </thead>
