@@ -93,11 +93,11 @@ def create_task(image_dir: str, prompt: str) -> Task:
 def run_benchmark() -> bool:
     # Must have OPENROUTER_API_KEY set in environment!
     MODELS: Final[list[str]] = [
-        # "openrouter/openai/gpt-5.2",
-        # "openrouter/google/gemini-3-pro-preview",
+        "openrouter/openai/gpt-5.2",
+        "openrouter/google/gemini-3-pro-preview",
         "openrouter/anthropic/claude-opus-4.5",
-        # "openrouter/x-ai/grok-4-fast",
-        # "openrouter/qwen/qwen3-vl-235b-a22b-instruct"
+        "openrouter/x-ai/grok-4-fast",
+        "openrouter/qwen/qwen3-vl-235b-a22b-instruct"
     ]
 
     result = eval(

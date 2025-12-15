@@ -27,9 +27,8 @@
     <tr><td><a href="../images/7_america_usa_unitedstates.jpg">7_america_usa_unitedstates.jpg</a></td><td>USA</td><td>✅</td></tr>
     <tr><td><a href="../images/7_america_usa_unitedstates.jpg">7_america_usa_unitedstates.jpg</a></td><td>USA</td><td>✅</td></tr>
     <tr><td><a href="../images/8_louisiana.jpg">8_louisiana.jpg</a></td><td></td><td>❌</td></tr>
-    <tr><td><a href="../images/8_louisiana.jpg">8_louisiana.jpg</a></td><td>Based on the shape of the chicken nugget, particularly the distinct square "panhandle" projection on the top left and the wider body below, it most closely resembles the state of **Texas**.<br><br>Although it is missing the western "arm" (the El Paso region), the combination of the flat-topped panhandle, the indentation on the right (resembling the Gulf Coast), and the downward point at the bottom is a common "Texas-shaped" configuration found in food items.<br><br>**Texas**</td><td>❌</td></tr>
-    <tr><td><a href="../images/9_mexico.jpg">9_mexico.jpg</a></td><td></td><td>❌</td></tr>
-    <tr><td><a href="../images/9_mexico.jpg">9_mexico.jpg</a></td><td>Based on the shape, specifically the projection at the top (resembling Scotland), the bulge on the left side (resembling Wales), and the curve towards the bottom right (resembling South East England), this piece of chicken resembles the island of **Great Britain**.<br><br>Some might also see a resemblance to **Italy** (a boot shape) or a **seahorse** (which is the shape of **Isabela Island** in the Galapagos or often associated with **Japan**), but the "Wales" bulge makes **Great Britain** the most geographically accurate fit.<br><br>**Great Britain**</td><td>❌</td></tr>
+    <tr><td><a href="../images/8_louisiana.jpg">8_louisiana.jpg</a></td><td>Texas</td><td>❌</td></tr>
+    <tr><td><a href="../images/9_mexico.jpg">9_mexico.jpg</a></td><td>Great Britain</td><td>❌</td></tr>
     <tr><td><a href="../images/10_australia.jpeg">10_australia.jpeg</a></td><td>Australia</td><td>✅</td></tr>
     <tr><td><a href="../images/10_australia.jpeg">10_australia.jpeg</a></td><td>Australia</td><td>✅</td></tr>
     <tr><td><a href="../images/11_southamerica.png">11_southamerica.png</a></td><td>South America</td><td>✅</td></tr>
