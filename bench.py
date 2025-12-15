@@ -8,7 +8,6 @@ from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.model import ChatMessage, ChatMessageUser, ContentImage, ContentText
 from inspect_ai.scorer import CORRECT, INCORRECT, Score, Target, accuracy, scorer, stderr
 from inspect_ai.solver import generate, system_message, TaskState
-from inspect_ai.log import EvalLog
 
 IMAGE_EXTS: Final[set[str]] = {".png", ".jpg", ".jpeg", ".webp"}
 
@@ -91,11 +90,14 @@ def create_task(image_dir: str, prompt: str) -> Task:
     )
 
 
-if __name__ == "__main__":
+def run_benchmark() -> bool:
     # Must have OPENROUTER_API_KEY set in environment!
     MODELS: Final[list[str]] = [
         "openrouter/openai/gpt-5.2",
-        "openrouter/google/gemini-2.5-flash"
+        "openrouter/google/gemini-3-pro-preview",
+        "openrouter/anthropic/claude-opus-4.5",
+        "openrouter/x-ai/grok-4-fast",
+        "openrouter/qwen/qwen3-vl-235b-a22b-instruct"
     ]
 
     result = eval(
@@ -103,5 +105,4 @@ if __name__ == "__main__":
         model=MODELS,
     )[0]
     
-    if result.status == "success":
-        pass
+    return result.status == "success"

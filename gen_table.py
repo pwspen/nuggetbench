@@ -47,7 +47,6 @@ def _sample_is_correct(sample: object) -> bool:
         return False
 
     value = getattr(score, "value", None)
-    print(value)
     if isinstance(value, str):
         return value.lower() == "c"
     if isinstance(value, bool):
@@ -211,7 +210,7 @@ def _build_scoreboard_content(summaries: Sequence[ModelSummary]) -> str:
         for summary in sorted_summaries
     ]
 
-    table = _render_table(("Model Name", "Accuracy"), rows, column_widths=("70%", "30%"))
+    table = _render_table(("Model", "Accuracy"), rows, column_widths=("70%", "30%"))
     return "# Model Accuracy\n\n" + table + "\n"
 
 
