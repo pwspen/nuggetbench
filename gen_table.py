@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from html import escape
+import re
 import os
 from pathlib import Path
 from typing import Sequence
@@ -148,7 +149,7 @@ def _format_targets(targets: Sequence[str]) -> str:
     return (
         "<details>"
         "<summary>Show answer</summary>"
-        f"<div><strong>Answer:</strong><br>{targets_text}</div>"
+        f"<div><strong>{targets_text}</strong></div>"
         "</details>"
     )
 
@@ -204,7 +205,7 @@ def _build_scoreboard_content(summaries: Sequence[ModelSummary]) -> str:
 
     rows = [
         (
-            _escape_html_text(summary.name),
+            _escape_html_text(summary.name.removeprefix("openrouter/")),
             _escape_html_text(f"{summary.num_correct}/{summary.total_samples}"),
         )
         for summary in sorted_summaries
@@ -242,7 +243,7 @@ def _build_study_table_content(samples: Sequence[SampleResult], output_dir: Path
     for sample in samples:
         image_src = _escape_html_attr(_relpath(sample.image_path, start=output_dir))
         image_alt = _escape_html_attr(sample.filename)
-        image_markdown = f'<img src="{image_src}" alt="{image_alt}" width="256">'
+        image_markdown = f'<img src="{image_src}" alt="{image_alt}" width="500">'
         targets_cell = _format_targets(sample.targets)
         rows.append((image_markdown, targets_cell))
 
@@ -251,7 +252,7 @@ def _build_study_table_content(samples: Sequence[SampleResult], output_dir: Path
         rows,
         column_widths=("45%", "55%"),
     )
-    return "# Study Guide\n\n" + table + "\n"
+    return "# Answers\n\n" + table + "\n"
 
 
 def _write_markdown(path: Path, content: str) -> None:
@@ -297,12 +298,21 @@ def generate_table_files(
 
     for model_name, samples in model_samples.items():
         model_path = output_dir / f"{_slugify(model_name)}.md"
-        ordered_samples = sorted(samples, key=lambda sample: sample.filename.lower())
+        ordered_samples = sorted(samples, key=lambda sample: _filename_sort_key(sample.filename))
         _write_markdown(model_path, _build_model_table_content(model_name, ordered_samples, output_dir))
 
-    study_path = output_dir / "study-guide.md"
+    study_path = output_dir / "answers.md"
     ordered_study_samples = sorted(study_samples.values(), key=lambda sample: sample.filename.lower())
     _write_markdown(
         study_path,
         _build_study_table_content(ordered_study_samples, output_dir),
     )
+def _filename_sort_key(filename: str) -> tuple:
+    parts = re.findall(r"\d+|\D+", filename.lower())
+    key: list[object] = []
+    for part in parts:
+        if part.isdigit():
+            key.append(int(part))
+        else:
+            key.append(part)
+    return tuple(key)
