@@ -2,7 +2,7 @@ from gen_table import generate_table_files
 from bench import run_benchmark
 
 def main():
-    if True:
+    if run_benchmark():
         generate_table_files(
             do_accuracy=False,
             do_models=True,
