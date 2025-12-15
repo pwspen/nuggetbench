@@ -2,7 +2,8 @@
 
 | Image | Targets |
 | --- | --- |
-| ![0_texas.jpg](../images/0_texas.jpg) | <details>
+| ![0_texas.jpg](../images/0_texas.jpg) | 
+<details>
   <summary>Click to see answer</summary>
   texas
 </details> |
