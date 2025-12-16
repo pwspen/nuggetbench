@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# Run this once per clone, then, run
+#  git core-pull
+# or 
+#  git core-push
+# to sync with core subtree
+
 set -euo pipefail
 
 remote_url="https://github.com/pwspen/imgbench-core.git"

@@ -85,6 +85,7 @@ def run_benchmark(
         models: list[str],
         system: str = "You are a helpful assistant. Do as the user asks.",
         images_dir: str = "images/",
+        log_dir: str = "logs/",
         temperature: float = 0.7,
         max_tokens: int = 30000,
 ) -> bool:
@@ -106,6 +107,7 @@ def run_benchmark(
     result = eval(
         create_task(image_dir=images_dir, prompt=prompt),
         model=models,
+        log_dir=log_dir,
     )[0]
     
     return result.status == "success"
