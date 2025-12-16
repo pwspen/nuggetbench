@@ -1,5 +1,5 @@
-from imgbench.gen_tables import generate_table_files
-from imgbench.bench import run_benchmark
+from core.imgbench.gen_tables import generate_table_files
+from core.imgbench.bench import run_benchmark
 
 prompt = "What geographical area does this resemble? Answer with only the name of the place. Answer quick, don't think too much!"
 
