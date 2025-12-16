@@ -1,5 +1,7 @@
 How well can LLMs recognize what geographical areas that chicken nuggets resemble?
 
+[Test yourself on the dataset here (18 images)](./tables/answers.md)
+
 <table width="100%">
 <colgroup>
     <col width="70%">
