@@ -1,3 +1,5 @@
+Note that you are probably viewing this repo as a subtree, [source lives here](https://github.com/pwspen/imgbench-core)
+
 Common backend for image + text in, text-out benchmarks. Includes benchmarking script using InspectAI and markdown table generation for result visualization.
 
 Example use if properly named images are already in "images" folder:
