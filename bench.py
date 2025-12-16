@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Final, Callable
 import re
 
-
 from inspect_ai import Task, eval, task
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.model import ChatMessage, ChatMessageUser, ContentImage, ContentText
@@ -15,6 +14,8 @@ def _normalize(s: str) -> str:
     # Remove whitespace and lowercase
     return re.sub(r"\s+", "", s).lower()
 
+# Answers are stored lowercased and without spaces
+# But we also want to keep the raw completion
 @scorer(metrics=[accuracy(), stderr()])
 def custom_scorer() -> Callable:
     async def score(state: TaskState, target: Target) -> Score:
@@ -24,8 +25,8 @@ def custom_scorer() -> Callable:
 
         return Score(
             value=CORRECT if answer in targets else INCORRECT,
-            answer=answer,          # store normalized answer
-            explanation=raw,        # keep raw completion for debugging
+            answer=answer,
+            explanation=raw,
         )
 
     return score
@@ -42,6 +43,11 @@ def label_from_filename(image_path: Path) -> list[str]:
     return parts[1:]
 
 def dataset_from_image_folder(image_dir: Path, prompt: str) -> MemoryDataset:
+    """
+    Compiles all samples (from images folder) into a MemoryDataset
+    Extracts targets from image filenames
+    Keeps image path as metadata
+    """
     if not image_dir.is_dir():
         raise NotADirectoryError(image_dir)
 
@@ -53,6 +59,7 @@ def dataset_from_image_folder(image_dir: Path, prompt: str) -> MemoryDataset:
 
     samples: list[Sample] = []
     for image_path in images:
+        # Labels are stored in filenames to ensure image-label mismatch can never happen
         target = label_from_filename(image_path)
         input_messages: list[ChatMessage] = [
             ChatMessageUser(
@@ -68,41 +75,37 @@ def dataset_from_image_folder(image_dir: Path, prompt: str) -> MemoryDataset:
                 id=image_path.name,
                 input=input_messages,
                 target=target,
-                metadata={"filename": image_path.name},
             )
         )
 
     return MemoryDataset(samples)
 
+def run_benchmark(
+        prompt: str,
+        models: list[str],
+        system: str = "You are a helpful assistant. Do as the user asks.",
+        images_dir: str = "images/",
+        temperature: float = 0.7,
+        max_tokens: int = 30000,
+) -> bool:
+    """
+    Runs benchmark on given models with images from images_dir (which must follow naming convention) and prompt
+    """
 
-SYSTEM: Final[str] = "You are a helpful assistant. Do as the user asks."
-
-
-@task
-def create_task(image_dir: str, prompt: str) -> Task:
-    return Task(
-        dataset=dataset_from_image_folder(Path(image_dir), prompt),
-        solver=[
-            system_message(SYSTEM),
-            generate(temperature=0.0, max_tokens=30000),
-        ],
-        scorer=custom_scorer(),
-    )
-
-
-def run_benchmark() -> bool:
-    # Must have OPENROUTER_API_KEY set in environment!
-    MODELS: Final[list[str]] = [
-        "openrouter/openai/gpt-5.2",
-        "openrouter/google/gemini-3-pro-preview",
-        "openrouter/anthropic/claude-opus-4.5",
-        "openrouter/x-ai/grok-4-fast",
-        "openrouter/qwen/qwen3-vl-235b-a22b-instruct"
-    ]
+    @task
+    def create_task(image_dir: str, prompt: str) -> Task:
+        return Task(
+            dataset=dataset_from_image_folder(Path(image_dir), prompt),
+            solver=[
+                system_message(system),
+                generate(temperature=temperature, max_tokens=max_tokens),
+            ],
+            scorer=custom_scorer(),
+        )
 
     result = eval(
-        create_task(image_dir="images/", prompt="What geographical area does this resemble? Answer with only the name of the place."),
-        model=MODELS,
+        create_task(image_dir=images_dir, prompt=prompt),
+        model=models,
     )[0]
     
     return result.status == "success"

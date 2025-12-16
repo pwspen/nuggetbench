@@ -6,7 +6,10 @@ from pathlib import Path
 from typing import Sequence
 
 from inspect_ai.log import EvalLog, read_eval_log
+from inspect_ai.scorer import CORRECT, INCORRECT
 
+# Everything here is just to generate markdown tables from eval logs, not part of actual benchmark functionality,
+# in order to easily visualize benchmark results on github
 
 @dataclass(slots=True)
 class ModelSummary:
@@ -25,11 +28,12 @@ class ModelSummary:
 class SampleResult:
     filename: str
     completion: str
-    is_correct: bool
+    correct: bool
     image_path: Path
-    targets: tuple[str, ...]
+    targets: tuple[str, ...] # Unlimited number of targets
 
-
+# Always load eval logs from files, instead of passing them in as object
+# Keeps table generation disconnected from actual benchmarking
 def get_eval_logs(path: Path) -> list[EvalLog]:
     if not path.is_dir():
         raise FileNotFoundError(f"Log directory not found: {path}")
@@ -40,7 +44,7 @@ def get_eval_logs(path: Path) -> list[EvalLog]:
 
     return [read_eval_log(f) for f in eval_files]
 
-
+# Because we're loading from file have to be very careful about attribute access, we have no idea what might be present or ciorrupted or whatever
 def _sample_is_correct(sample: object) -> bool:
     score = getattr(sample, "score", None)
     if score is None:
@@ -48,45 +52,33 @@ def _sample_is_correct(sample: object) -> bool:
 
     value = getattr(score, "value", None)
     if isinstance(value, str):
-        return value.lower() == "c"
+        return value == CORRECT
     if isinstance(value, bool):
         return value
-
-    metrics = getattr(score, "metrics", None)
-    if isinstance(metrics, dict):
-        accuracy_metric = metrics.get("accuracy")
-        metric_value = getattr(accuracy_metric, "value", None)
-        if isinstance(metric_value, (int, float)):
-            return metric_value > 0
-        if metric_value is not None:
-            return bool(metric_value)
-
-    answer = getattr(score, "answer", None)
-    if isinstance(answer, str):
-        normalized_answer = answer.strip().lower()
-        targets = [str(t).strip().lower() for t in getattr(sample, "target", [])]
-        return normalized_answer in targets
 
     raise ValueError("Unable to determine correctness for sample")
 
 
-def _sample_filename(sample: object) -> str:
-    # Prefer filename stored on the input message metadata (matches bench dataset)
-    inputs = getattr(sample, "input", None) or []
-    if inputs:
-        metadata = getattr(inputs[0], "metadata", None) or {}
-        filename = metadata.get("filename")
-        if filename:
-            return filename
+def _filename_from_metadata(metadata: object) -> str | None:
+    if metadata is None:
+        return None
+    if isinstance(metadata, dict):
+        return metadata.get("filename")
+    return getattr(metadata, "filename", None)
 
-    sample_metadata = getattr(sample, "metadata", None) or {}
-    filename = sample_metadata.get("filename")
+
+def _sample_filename(sample: object) -> str:
+    filename = _filename_from_metadata(getattr(sample, "metadata", None))
     if filename:
         return filename
 
-    sample_id = getattr(sample, "id", None)
-    if sample_id:
-        return str(sample_id)
+    # Get image's filepath from sample metadata to ensure no mismatch
+    inputs = getattr(sample, "input", None) or []
+    if inputs:
+        for input_item in inputs:
+            filename = _filename_from_metadata(getattr(input_item, "metadata", None))
+            if filename:
+                return filename
 
     raise ValueError("Sample is missing a filename identifier")
 
@@ -97,14 +89,13 @@ def _sample_completion(sample: object) -> str:
     if completion:
         return completion
 
-    score = getattr(sample, "score", None)
-    explanation = getattr(score, "explanation", None)
-    if explanation:
-        return explanation
+    # This can happen if token limit is exceeded during model inference,
+    # so we don't want to raise an error which would completely crash everything
+    print("Warning: Sample missing completion. This was likely caused by exceeding the token limit or an API error.")
 
-    return ""
+    return "No Completion Provided"
 
-
+# Build our actual results, safely
 def _collect_sample_results(log: EvalLog, images_dir: Path) -> tuple[ModelSummary, list[SampleResult]]:
     model_name = str(getattr(log.eval, "model", "unknown"))
     samples = list(getattr(log, "samples", []))
@@ -122,17 +113,20 @@ def _collect_sample_results(log: EvalLog, images_dir: Path) -> tuple[ModelSummar
             SampleResult(
                 filename=filename,
                 completion=completion,
-                is_correct=is_correct,
+                correct=is_correct,
                 image_path=image_path,
                 targets=targets,
             )
         )
 
-    num_correct = sum(1 for sample in sample_results if sample.is_correct)
+    num_correct = sum(1 for sample in sample_results if sample.correct)
     total_samples = len(sample_results)
 
     return ModelSummary(model_name, num_correct, total_samples), sample_results
 
+
+
+### Below is markdown table generation
 
 def _escape_html_text(value: str) -> str:
     # Preserve intentional line breaks inside table cells.
@@ -226,7 +220,7 @@ def _build_model_table_content(
             f'<a href="{_escape_html_attr(image_link)}">{_escape_html_text(sample.filename)}</a>'
         )
         answer_cell = _escape_html_text(sample.completion)
-        correctness_cell = "✅" if sample.is_correct else "❌"
+        correctness_cell = "✅" if sample.correct else "❌"
         rows.append((filename_cell, answer_cell, correctness_cell))
 
     table = _render_table(

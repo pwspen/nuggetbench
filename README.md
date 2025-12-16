@@ -9,6 +9,7 @@ How well can LLMs recognize what geographical areas that chicken nuggets resembl
     <tr><th>Model</th><th>Accuracy</th></tr>
   </thead>
   <tbody>
+    <tr><td>Human baseline</td><td>17/18</td></tr>
     <tr><td>google/gemini-3-pro-preview</td><td>9/18</td></tr>
     <tr><td>anthropic/claude-opus-4.5</td><td>7/18</td></tr>
     <tr><td>qwen/qwen3-vl-235b-a22b-instruct</td><td>5/18</td></tr>
