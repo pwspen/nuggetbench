@@ -10,7 +10,7 @@ from core.bench import run_benchmark
 prompt = "What geographical area does this resemble? Answer with only the name of the place. Answer quick, don't think too much!"
 
 models = [
-    "openrouter/openai/gpt-5.2"
+    "openrouter/openai/gpt-5.2",
     "openrouter/google/gemini-3-pro-preview",
 ]
 
@@ -25,5 +25,7 @@ if run_benchmark( # Returns True on success
         do_models=True,
         do_answers=True
     )
-    # Requires paths for logs, images, and output folders - pass as args log_dir, images_dir, output_dir, defaults are "logs/", "images/", "tables/" respectively
+    # Requires paths for logs, images, and output folders - pass as args:
+    # log_dir, images_dir, output_dir
+    # defaults are "logs/", "images/", "tables/" respectively
 ```
